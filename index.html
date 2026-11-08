@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore Circl’s Standard and Special savings circles in a clickable demo.">
+  <title>Circl</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="app-header">
+    <a href="#/" class="brand" aria-label="Circl overview">
+      <picture>
+        <source media="(max-width: 700px)" srcset="./assets/mobile-brand.svg">
+        <img src="./assets/brand.svg" alt="">
+      </picture>
+      circl
+    </a>
+    <div class="header-tools">
+      <span class="badge blue"><span class="desktop-only">Design preview</span><span class="mobile-only">Preview</span></span>
+      <span class="desktop-only">USD</span>
+      <span class="avatar" aria-label="Maya Adams">MA</span>
+    </div>
+  </header>
+  <aside class="sidebar">
+    <p class="eyebrow">Your space</p>
+    <nav id="navigation" aria-label="Main navigation"></nav>
+    <div class="sidebar-bottom">
+      <div class="panel sage sidebar-principle">
+        <img src="./assets/people.svg" alt="">
+        <p>Everyone gets a turn.</p>
+        <small>Follow your full schedule, including after payout.</small>
+      </div>
+      <div class="sidebar-account">Maya Adams<br><small>Personal account</small></div>
+    </div>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <noscript><p class="panel">Enable JavaScript to explore the Circl preview.</p></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
