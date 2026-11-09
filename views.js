@@ -1,4 +1,4 @@
-import { causes, cycleEnd, discovery, gracePeriodDays, memberships, payout, recoveryExample } from './data.js';
+import { causes, challengeStandings, cycleEnd, discovery, gracePeriodDays, memberships, payout, recoveryExample } from './data.js';
 
 export const money = (amount, cents = false) => new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', minimumFractionDigits: cents || !Number.isInteger(amount) ? 2 : 0,
@@ -353,6 +353,38 @@ export function charity() {
       </div>
     </section>
     <small class="muted">Giving is optional and does not change a circle’s payout order.</small>`;
+}
+
+export function challenge() {
+  const standings = challengeStandings();
+  let rank = 0;
+  return `${heading('Community recognition', 'The Challenge', 'Celebrate the circles that keep completing successful cycles together.')}
+    <div class="panel sage">
+      <h2 class="row">${icon('challenge')} Keep a good thing going</h2>
+      <p class="muted">Each renewal your circle completes adds one to its streak. Finishing a cycle together is already an achievement, whether you renew or stop.</p>
+    </div>
+    <div class="grid split">
+      <section class="panel" aria-labelledby="challenge-ranking">
+        <div class="row spread row-wrap"><h2 id="challenge-ranking">Longest active streaks</h2>${badge('Sample rankings', 'blue')}</div>
+        <ol class="challenge-list" role="list">
+          ${standings.map(({ name, kind, streak }, i) => {
+            if (streak !== standings[i - 1]?.streak) rank = i + 1;
+            return `<li class="challenge-row">
+              <span class="round" aria-label="Rank ${rank}">${rank}</span>
+              <div><h3>${name}</h3><small class="muted">${kind} circle</small></div>
+              <div class="challenge-streak"><strong>${streak}</strong><small class="muted">${streak === 1 ? 'renewal' : 'renewals'}</small></div>
+            </li>`;
+          }).join('')}
+        </ol>
+      </section>
+      <aside class="panel">
+        <h2>How a streak grows</h2>
+        <p class="muted">Complete and settle your first cycle. Then, if everyone agrees to renew, each consecutive renewed cycle you complete and settle counts.</p>
+        <p class="muted">A renewal in progress keeps the current streak. An unsuccessful cycle breaks it.</p>
+        <small class="teal-text">Recognition only. Rankings never affect payouts or payout order.</small>
+        ${link('View my circles', '/circles')}
+      </aside>
+    </div>`;
 }
 
 const agreementSections = [

@@ -176,6 +176,11 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .key-values dd { margin: 0; font-weight: 700; min-width: min(8rem, 28vw); }
 .schedule { padding: 0; margin: 0; list-style: none; display: grid; gap: 8px; }
 .schedule li { display: grid; grid-template-columns: 28px minmax(0, 1.6fr) minmax(82px, .85fr) minmax(60px, .9fr); align-items: center; gap: 10px; }
+.challenge-list { list-style: none; margin: 0; padding: 0; }
+.challenge-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; }
+.challenge-row + .challenge-row { border-top: 1px solid var(--border); }
+.challenge-streak { color: var(--teal); text-align: right; }
+.challenge-streak strong { font-size: 22px; }
 .round { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--sage); color: var(--teal); font-size: 12px; }
 .notice { border-radius: 18px; padding: 16px; }
 .labeled-check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
@@ -208,7 +213,7 @@ dialog::backdrop { background: rgb(23 60 60 / 35%); }
   .header-tools { gap: 12px; }
   .sidebar { z-index: 2; inset: auto 0 0; width: auto; overflow: visible; border-top: 1px solid var(--border); padding: 8px 12px max(8px, env(safe-area-inset-bottom)); }
   .sidebar > .eyebrow, .sidebar-bottom, .nav-link.create-link { display: none; }
-  #navigation { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #navigation { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
   .nav-link { justify-content: center; flex-direction: column; gap: 4px; min-height: 54px; padding: 4px; font-size: 11px; }
   .nav-link[aria-current] { background: transparent; }
   main { margin-left: 0; padding: 20px 20px calc(100px + env(safe-area-inset-bottom)); gap: 16px; }

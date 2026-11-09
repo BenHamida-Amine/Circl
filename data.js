@@ -36,6 +36,32 @@ export const causes = {
 
 export const gracePeriodDays = 7;
 
+// Sample histories list renewals from oldest to newest, after the initial cycle.
+const challengeCircles = [
+  { name: 'Neighborhood Makers', kind: 'Standard', renewals: ['completed', 'completed', 'completed'] },
+  { name: 'Learning Partners', kind: 'Special', renewals: ['completed', 'completed'] },
+  { name: 'Market Street Circle', kind: 'Standard', renewals: ['completed', 'completed', 'completed', 'completed', 'in progress'] },
+  { name: 'Garden Neighbors', kind: 'Standard', renewals: ['completed', 'interrupted', 'completed', 'completed'] },
+  { name: 'Creative Crew', kind: 'Standard', renewals: ['completed'] },
+];
+
+export function renewalStreak(renewals) {
+  // An ongoing cycle neither adds to nor breaks an earned streak.
+  const lastCompletedIndex = renewals.at(-1) === 'in progress' ? renewals.length - 2 : renewals.length - 1;
+  let streak = 0;
+  for (let i = lastCompletedIndex; i >= 0 && renewals[i] === 'completed'; i--) streak++;
+  return streak;
+}
+
+export function challengeStandings() {
+  return challengeCircles.map(circle => ({
+    name: circle.name,
+    kind: circle.kind,
+    streak: renewalStreak(circle.renewals),
+  })).filter(circle => circle.streak > 0)
+    .sort((a, b) => b.streak - a.streak || a.name.localeCompare(b.name, 'en'));
+}
+
 // An illustrative Standard circle with seven members and a $100 contribution.
 const recoveryLoss = 600;
 const recoveryHoldback = payout('Standard', 7, 100).held;

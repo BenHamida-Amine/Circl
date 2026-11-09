@@ -1,7 +1,7 @@
 import { memberships } from './data.js';
 import { dialogView } from './dialogs.js';
 import {
-  agreement, charity, circleDetails, completion, createCircle, draftEstimate, explore,
+  agreement, challenge, charity, circleDetails, completion, createCircle, draftEstimate, explore,
   money, myCircles, overview, results,
 } from './views.js';
 
@@ -41,6 +41,7 @@ const navItems = [
   ['/explore', 'Find a circle', 'Explore', 'search'],
   ['/circles', 'My circles', 'Circles', 'circles'],
   ['/charity', 'Charity', 'Charity', 'heart'],
+  ['/challenge', 'Challenge', 'Challenge', 'challenge'],
   ['/create', 'Create a circle', 'Create', 'plus'],
 ];
 
@@ -49,6 +50,7 @@ const routes = {
   '/explore': { title: 'Find a circle', nav: '/explore', view: () => explore(preferences, filters) },
   '/circles': { title: 'My circles', nav: '/circles', view: myCircles },
   '/charity': { title: 'Charity', nav: '/charity', view: charity },
+  '/challenge': { title: 'Challenge', nav: '/challenge', view: challenge },
   '/create': { title: 'Create a circle', nav: '/create', kind: 'Standard', view: () => createCircle('Standard', drafts.Standard) },
   '/create/special': { title: 'Create a Special circle', nav: '/create', kind: 'Special', view: () => createCircle('Special', drafts.Special) },
   '/agreement': { title: 'Agreement preview', view: (query) => {
@@ -66,7 +68,7 @@ for (const [id, circle] of Object.entries(memberships)) {
 function renderNavigation(active) {
   navigation.innerHTML = navItems.map(([path, label, mobile, symbol]) => `
     <a class="nav-link ${path === '/create' ? 'create-link' : ''}" href="#${path}" ${active === path ? 'aria-current="page"' : ''}>
-      <picture>${symbol === 'plus' ? '' : `<source media="(max-width: 700px)" srcset="./assets/mobile-${symbol}.svg">`}
+      <picture>${['plus', 'challenge'].includes(symbol) ? '' : `<source media="(max-width: 700px)" srcset="./assets/mobile-${symbol}.svg">`}
         <img src="./assets/${symbol}.svg" alt="">
       </picture>
       <span class="desktop-only">${label}</span><span class="mobile-only">${mobile}</span>
