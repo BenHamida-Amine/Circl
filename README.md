@@ -12,4 +12,6 @@ npm start
 
 Open <http://127.0.0.1:4173/>. The app uses native HTML, CSS and JavaScript and requires no package installation or credentials.
 
-Try **Review payment** from the overview, **Review commitment** from discovery, or **Create a circle** to see how the contribution and member count affect the payout. Drafts can be saved in this browser. The screens use sample data. Checkout, joining, signing and settlement are previews. Delay and default timing remains undecided.
+Try **Review payment** from the overview, **Review commitment** from discovery, or **Create a circle** to see how the contribution and member count affect the payout. Drafts can be saved in this browser. The screens use sample data. Checkout, joining, signing and settlement are previews.
+
+Open **Charity → Help a circle recover** to see how the seven-day exit rule, holdback distribution, recovery donations and member repayment fit together. The repayment example credits the holdback against the debt and reconciles donor support so members recover each loss once. The demo does not enforce account blocks or transfer funds.

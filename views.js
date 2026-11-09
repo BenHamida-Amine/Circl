@@ -1,4 +1,4 @@
-import { causes, cycleEnd, discovery, memberships, payout } from './data.js';
+import { causes, cycleEnd, discovery, gracePeriodDays, memberships, payout, recoveryExample } from './data.js';
 
 export const money = (amount, cents = false) => new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', minimumFractionDigits: cents || !Number.isInteger(amount) ? 2 : 0,
@@ -38,9 +38,12 @@ const summary = (label, metric, note) => `<div class="panel summary">
 
 export const rows = (items) => `<dl class="key-values">${items.map(([label, value]) =>
   `<dt>${label}</dt><dd>${value}</dd>`).join('')}</dl>`;
+export const exitRule = `A required contribution still unpaid ${gracePeriodDays} days after its due date counts as an exit.`;
+export const trustRule = 'Before the circle starts, every member confirms that they know and trust the other members and accept responsibility for their own conduct and commitments. Circl provides tools for the members to manage their circle.';
 export const delayNotice = `<div class="notice amber stack">
-  <h3>Delay timings are not finalized.</h3>
-  <small>Joining and signing open only after the complete agreement is ready.</small>
+  <h3>${gracePeriodDays} days to make a late payment</h3>
+  <small>${exitRule}</small>
+  <small>The PayPal account holder is barred from joining Circl. The agreement sets out how members recover their losses.</small>
 </div>`;
 
 function circleCard(id, circle) {
@@ -267,11 +270,10 @@ export function createCircle(kind, draft) {
           <div class="field-label">Duration · ${special ? 'fixed for Special' : 'one turn per member'}<output class="field-value" id="duration">${special ? 9 : Number(draft.members)} months</output></div>
         </div>
         ${special ? `<div class="notice blue stack"><strong>Pay in the other members’ turns.</strong>
-          <small class="muted">Your own turn has $0 due each month. All members agree the order before signing.</small></div>
-          <small class="amber-text">Grace periods and the missed-payment review threshold remain undecided. Agreements cannot be signed yet.</small>`
-          : `<small class="muted">All members contribute every month, including after their own payout. Payout order is fixed before the circle starts.</small>
-          <div class="notice amber stack"><strong>Delay timings still need a decision</strong>
-            <small>Grace periods and the missed-payment review threshold must be finalized before anyone can sign.</small></div>`}
+          <small class="muted">Your own turn has $0 due each month. All members agree the order before signing.</small></div>`
+          : `<small class="muted">All members contribute every month, including after their own payout. Payout order is fixed before the circle starts.</small>`}
+        ${delayNotice}
+        <small class="muted">${trustRule}</small>
         <div class="actions">
           ${special ? '' : action('Save draft', 'save-draft')}
           <button class="btn primary" type="submit">${special ? 'Review Special circle' : 'Review circle & agreement'}</button>
@@ -338,7 +340,19 @@ export function charity() {
         </div>
       </div>
     </div>
-    <small class="muted">Donations stay separate: no circle holdback and no change to payout priority.</small>`;
+    <section class="panel sage" aria-labelledby="recovery-title">
+      <div class="row row-wrap spread">
+        <h2 id="recovery-title">Help a circle recover</h2>${badge('Illustrative case', 'blue')}
+      </div>
+      <p class="muted">Give toward the gap left when a member exits. Donations stop when the loss is covered. The exiting member still owes repayment.</p>
+      <progress class="progress" value="${recoveryExample.donated}" max="${recoveryExample.repaymentDue}" aria-label="Sample recovery fund progress"></progress>
+      <small class="muted">${money(recoveryExample.donated)} raised · ${money(recoveryExample.stillNeeded)} still needed after the holdback</small>
+      <div class="actions">
+        ${action('Contribute to recovery', 'donation', 'primary', '', 'data-id="recovery"')}
+        ${action('See how repayment works', 'settlement')}
+      </div>
+    </section>
+    <small class="muted">Giving is optional and does not change a circle’s payout order.</small>`;
 }
 
 const agreementSections = [
@@ -346,7 +360,10 @@ const agreementSections = [
   ['Two fixed commitment formats', 'Standard: 2–7 members, one monthly turn each, up to 7 months. Special: 3 members, 3 quarterly turns, 9 months. The recipient pays $0 during their own turn.'],
   ['The 10% completion holdback', 'Receive 90% of your scheduled payout at your turn. The remaining 10% stays attributed to you until you complete your obligations and settlement is finished.'],
   ['Contributions continue after your payout', 'The agreement shows your remaining payment obligations. Scheduled $0-due months in a Special circle are exempt.'],
-  ['Delays, default, and the holdback', 'Delay timings are still undecided. Confirmed default after payout can apply your holdback to documented losses in that circle, credited against the outstanding amount.'],
+  ['Late payment and exit', exitRule + ' The owner of the PayPal account used for the circle is barred from joining Circl. Scheduled $0 months are exempt.'],
+  ['Holdback and repayment', 'Any holdback from the exiting member’s payout is divided equally among the other circle members and credited against the loss. The exiting member is asked to repay the remaining loss to the affected members through PayPal.'],
+  ['Voluntary recovery donations', 'People may help cover the loss through a dedicated fund in Charity. Donations do not erase the exiting member’s debt. Once members are made whole through PayPal repayment, any remaining recovery funds go to another available charity or are returned to the original donors with thanks.'],
+  ['Trust and responsibility', trustRule],
   ['Completion and renewal', 'Finish the cycle and settle outstanding amounts. You may stop or review a new cycle. Renewal requires fresh consent. Unpaid obligations remain due after the scheduled end.'],
 ];
 
@@ -354,20 +371,20 @@ export function agreement(back) {
   return `${heading('Your commitment / template preview', 'Understand before you commit.', 'Every member accepts the same terms before a circle starts.', link('Back to previous screen', back))}
     <div class="grid split">
       <div class="panel">
-        ${badge('Agreement preview · version 0.2', 'blue')}
+        ${badge('Agreement preview · version 0.3', 'blue')}
         ${agreementSections.map(([title, copy], i) => `<h3>${i + 1}. ${title}</h3><small class="muted">${copy}</small>`).join('')}
       </div>
       <div class="stack">
-        <div class="panel amber"><h2>Some terms are still undecided</h2>
-          ${rows([['Grace period', 'Not finalized'], ['Review threshold', 'Not finalized']])}
-          <small>Signing remains unavailable until these rules and the circle-specific schedule are complete.</small>
+        <div class="panel amber"><h2>Late payment and exit</h2>
+          ${rows([['Grace period', gracePeriodDays + ' days'], ['When it ends', 'Exit if unpaid']])}
+          <small>Applies to required contributions only.</small>
         </div>
         <div class="panel"><h2>Electronic agreement</h2>
           <label>Member name · sample<input value="Maya Adams" readonly></label>
-          <label class="labeled-check"><input type="checkbox" disabled> I have reviewed the complete circle agreement.</label>
+          <label class="labeled-check"><input type="checkbox" disabled> I have reviewed this agreement. I know and trust the other members and accept responsibility for my conduct and commitments.</label>
           <button class="btn full" disabled>Sign agreement · unavailable</button>
           <small class="muted">After signing, a dated copy, verified member identity, and the accepted agreement version will be recorded.</small>
-          <small class="muted">This is a preview.</small>
+          <small class="muted">This preview shows the agreement. Signing and identity verification are unavailable here.</small>
           ${action('Review delay & default policy', 'policy')}
         </div>
       </div>

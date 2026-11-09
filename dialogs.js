@@ -1,5 +1,5 @@
-import { causes, cycleEnd, discovery, memberships, payout } from './data.js';
-import { action, agreementLink, badge, delayNotice, icon, link, money, rows, safe } from './views.js';
+import { causes, cycleEnd, discovery, gracePeriodDays, memberships, payout, recoveryExample } from './data.js';
+import { action, agreementLink, badge, delayNotice, exitRule, icon, link, money, rows, safe, trustRule } from './views.js';
 
 const small = (text) => `<small class="muted">${text}</small>`;
 const previewNote = small('This preview does not connect to PayPal or transfer money.');
@@ -9,7 +9,7 @@ export function dialogView(key, options) {
   let title;
   let content;
   let graphic = 'dialog-shield';
-  const wide = key === 'policy';
+  const wide = key === 'policy' || key === 'settlement';
 
   switch (key) {
     case 'payment': {
@@ -20,6 +20,7 @@ export function dialogView(key, options) {
       content = `${small(c.name + ' · due November 1, 2026')}
         ${rows([['Contribution', amount], ['Fee in this preview', '$0.00']])}<hr>
         ${rows([['Total to pay', amount]])}
+        ${small(exitRule)}
         ${small(`After this payment: 3 × ${money(c.contribution)} remain. Your payout releases ${money(net)} and holds ${money(held)} until completion.`)}
         ${action('Continue to PayPal', 'checkout', 'primary', 'full', `data-id="${id}"`)}
         ${previewNote}`;
@@ -44,15 +45,16 @@ export function dialogView(key, options) {
       break;
     }
     case 'donation': {
-      const cause = causes[id];
-      title = 'Support ' + cause.name;
+      const recovery = id === 'recovery';
+      const cause = recovery ? recoveryExample : causes[id];
+      title = recovery ? 'Contribute to circle recovery' : 'Support ' + cause.name;
       graphic = 'giving-heart';
-      content = `<p class="muted">Choose a little kindness today.</p>
+      content = `<p class="muted">${recovery ? `${money(recoveryExample.stillNeeded)} is still needed in this sample case.` : 'Choose a little kindness today.'}</p>
         <div class="actions" aria-label="Donation amount">${[10, 25, 50].map(amount =>
           action(money(amount), 'choose-donation', amount === donationAmount ? 'primary' : 'secondary', '',
             `data-amount="${amount}" aria-pressed="${amount === donationAmount}"`)).join('')}</div>
         ${rows([['Your one-time donation', `<span id="donation-total" aria-live="polite">${money(donationAmount, true)}</span>`]])}
-        <p class="muted">Your donation is separate from circle contributions. Giving does not change payout order.</p>
+        <p class="muted">${recovery ? 'Your donation helps affected members while repayment is pending. Once they are made whole through PayPal repayment, remaining funds go to another available charity or return to the original donors with thanks.' : 'Your donation is separate from circle contributions. Giving does not change payout order.'}</p>
         ${action('Review donation in PayPal', 'checkout-donation', 'primary', 'full', `data-id="${id}"`)}
         ${small('Leaderboard sharing is optional. Your name stays private by default.')}`;
       break;
@@ -60,7 +62,7 @@ export function dialogView(key, options) {
     case 'checkout':
     case 'checkout-donation': {
       const donation = key === 'checkout-donation';
-      const item = donation ? causes[id] : memberships[id];
+      const item = donation ? (id === 'recovery' ? recoveryExample : causes[id]) : memberships[id];
       const amount = donation ? donationAmount : item.contribution;
       title = 'Continue with PayPal';
       graphic = 'payment-shield';
@@ -79,6 +81,7 @@ export function dialogView(key, options) {
         ${rows([['Contribution', `${money(Number(draft.contribution))} / paying month`], ['Duration', `${months} months`],
           ['Gross payout', money(gross)], ['Receive at your turn', money(net)], ['Completion holdback', money(held)]])}
         ${small('Every member accepts the fixed payout order and complete agreement before the circle starts.')}
+        ${small(trustRule)}
         ${delayNotice}
         ${agreementLink('Prepare agreement preview', path, 'primary', 'full')}
         ${action('Save as draft', 'save-draft', 'secondary', 'full')}`;
@@ -116,22 +119,32 @@ export function dialogView(key, options) {
         ${link('Explore Special format', '/create/special', 'secondary', 'full')}`;
       break;
     case 'policy':
-      title = 'Delays, default, and your rights';
-      content = `${small('Policy preview · timing decisions remain open')}
-        <div class="notice amber stack"><strong>A payment is late</strong>${small('Grace-period duration and the review threshold are still to be finalized before agreements can be signed.')}</div>
-        <div class="notice blue stack"><strong>A Special month has $0 due</strong>${small('A scheduled contribution break is exempt from late-payment review.')}</div>
-        <div class="notice sage stack"><strong>Default is confirmed after payout</strong>${small('The recipient’s 10% holdback may be applied to documented losses in that circle and credited against the outstanding amount. Unpaid obligations remain.')}</div>
-        <div class="notice subtle stack"><strong>Participation is prohibited</strong>${small('Confirmed abandonment after payout results in a permanent participation ban. Repayment, statements, support, and appeal remain accessible.')}</div>
+      title = 'Late payments, exits, and recovery';
+      content = `${small('Circle agreement preview')}
+        <div class="notice amber stack"><strong>${gracePeriodDays} days to pay</strong>${small(exitRule + ' The PayPal account holder is barred from joining Circl.')}</div>
+        <div class="notice blue stack"><strong>A Special month has $0 due</strong>${small('A scheduled contribution break is exempt.')}</div>
+        <div class="notice sage stack"><strong>Holdback and repayment</strong>${small('Any holdback from the exiting member’s payout is divided equally among the other circle members. The exiting member is asked to repay the remaining loss to affected members through PayPal.')}</div>
+        <div class="notice subtle stack"><strong>Voluntary recovery donations</strong>${small('The charity recovery fund can help cover the gap while repayment is pending. Donations leave the debt in place.')}</div>
         <small class="teal-text">Leaving after a fully completed and settled cycle has no penalty.</small>
-        ${action('See a default settlement example', 'settlement', 'primary', 'full')}`;
+        ${action('See how repayment works', 'settlement', 'primary', 'full')}`;
       break;
-    case 'settlement':
-      title = 'Default settlement example';
-      content = `${small('Illustrative amounts for a confirmed default after payout.')}
-        ${rows([['Unpaid contributions', '$600'], ['Holdback applied', '−$70'], ['Remaining unpaid', '$530']])}
-        ${small('The holdback offsets part of the loss and is credited once against the outstanding balance.')}
-        ${action('Back to delay policy', 'policy', 'secondary', 'full')}`;
+    case 'settlement': {
+      const example = recoveryExample;
+      title = 'Circle recovery example';
+      content = `${small('Sample: one of seven members exits after receiving a payout.')}
+        ${rows([
+          ['Total loss', money(example.loss)],
+          ['Holdback split among the other six members', money(example.holdback)],
+          ['Exiting member still owes', money(example.repaymentDue)],
+          ['Recovery donations already applied', money(example.donated)],
+          ['Loss still uncovered', money(example.stillNeeded)],
+        ])}
+        <div class="notice sage stack"><strong>When the exiting member repays in full</strong>
+          ${small(`${money(example.stillNeeded)} covers the remaining loss in the affected members’ PayPal accounts. The other ${money(example.donated)} replenishes the amount already covered by donors, so each loss is covered once.`)}
+          ${small('Remaining recovery funds go to another available charity. If none is available, they return to the original donors with a thank-you.')}</div>
+        ${path === '/charity' ? action('Contribute to recovery', 'donation', 'primary', 'full', 'data-id="recovery"') : link('View recovery fund in Charity', '/charity', 'primary', 'full')}`;
       break;
+    }
     case 'finish':
       title = 'Cycle closed';
       content = `<p class="muted">This example shows what leaving looks like after all contributions and settlement are complete.</p>

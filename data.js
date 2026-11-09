@@ -34,6 +34,21 @@ export const causes = {
   books: { name: 'Books for Every Child', group: 'Education', description: 'Give young readers a stronger start.', icon: 'book', raised: 2600, goal: 4000 },
 };
 
+export const gracePeriodDays = 7;
+
+// An illustrative Standard circle with seven members and a $100 contribution.
+const recoveryLoss = 600;
+const recoveryHoldback = payout('Standard', 7, 100).held;
+const recoveryDonated = 200;
+export const recoveryExample = {
+  name: 'Sample circle recovery fund',
+  loss: recoveryLoss,
+  holdback: recoveryHoldback,
+  donated: recoveryDonated,
+  repaymentDue: recoveryLoss - recoveryHoldback,
+  stillNeeded: recoveryLoss - recoveryHoldback - recoveryDonated,
+};
+
 export function payout(kind, members, contribution) {
   const gross = Math.round(contribution * 100) * (kind === 'Special' ? 6 : members);
   const held = Math.round(gross / 10);
