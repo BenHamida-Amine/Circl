@@ -65,10 +65,11 @@ function circleCard(id, circle) {
 
 const membershipCards = () => Object.entries(memberships).map(([id, circle]) => circleCard(id, circle)).join('');
 
-export function overview(budget) {
+export function overview(budget, accountName = 'Maya Adams') {
   const available = Math.max(0, budget - 60);
+  const greeting = accountName ? `Good morning, ${safe(accountName.split(/\s+/)[0])}.` : 'Welcome to Circl.';
   return `<div class="desktop-only section overview-desktop">
-    ${heading('Your overview', 'Good morning, Maya.', '', link('Find a circle', '/explore'))}
+    ${heading('Your overview', greeting, '', link('Find a circle', '/explore'))}
     <div class="grid three">
       ${summary('Peak monthly commitments', '$60', `${money(available)} available · Dec–Feb payments: $40`)}
       ${summary('Next amount you receive', '$216', 'Dec 1 · $240 gross less $24 holdback')}
@@ -98,7 +99,7 @@ export function overview(budget) {
     </div>
   </div>
   <div class="mobile-only mobile-overview">
-    ${heading('', 'Good morning, Maya.')}
+    ${heading('', greeting)}
     <div class="panel sage">
       <p class="eyebrow teal-text">Your paying-month budget</p>
       <p class="metric">${money(available)} available</p>

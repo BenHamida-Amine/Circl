@@ -1,3 +1,6 @@
+import {
+  accountView, demoAccounts, fillSample, isAccountPath, resendConfirmation, restoreAccount, signOutAccount, submitAccount,
+} from './account.js';
 import { memberships } from './data.js';
 import { dialogView } from './dialogs.js';
 import {
@@ -8,13 +11,18 @@ import {
 const main = document.querySelector('#main');
 const dialog = document.querySelector('#dialog');
 const navigation = document.querySelector('#navigation');
+const sidebar = document.querySelector('.sidebar');
+const headerTools = document.querySelector('#header-tools');
 const defaults = {
   Standard: { name: 'Creative Futures', contribution: 40, members: 6, start: '2026-11-01' },
   Special: { name: 'Skills Fund', contribution: 40, members: 3, start: '2026-11-01' },
 };
 const preferences = { budget: 100, goal: '' };
 const filters = { search: '', format: 'all', limit: 'budget' };
-const storageKey = (kind) => 'circl:draft:' + kind.toLowerCase();
+const storageKey = (kind) => {
+  const scope = activeAccount.id === 'preview-person' ? '' : activeAccount.id + ':';
+  return 'circl:draft:' + scope + kind.toLowerCase();
+};
 
 function readDraft(kind) {
   try {
@@ -30,11 +38,24 @@ function readDraft(kind) {
   return { ...defaults[kind] };
 }
 
-const drafts = { Standard: readDraft('Standard'), Special: readDraft('Special') };
+const drafts = {};
 let currentPath = '/';
 let currentKind = 'Standard';
 let donationAmount = 25;
 let lastTrigger;
+let activeAccount = null;
+let accountLoading = !demoAccounts;
+let accountUnavailable = false;
+let afterAccountPath = '/';
+
+function useAccount(account) {
+  activeAccount = account;
+  if (!account) return;
+  Object.assign(preferences, { budget: 100, goal: '' });
+  Object.assign(filters, { search: '', format: 'all', limit: 'budget' });
+  drafts.Standard = readDraft('Standard');
+  drafts.Special = readDraft('Special');
+}
 
 const navItems = [
   ['/', 'Overview', 'Home', 'home'],
@@ -46,7 +67,7 @@ const navItems = [
 ];
 
 const routes = {
-  '/': { title: 'Overview', nav: '/', view: () => overview(preferences.budget) },
+  '/': { title: 'Overview', nav: '/', view: () => overview(preferences.budget, activeAccount.kind === 'person' ? activeAccount.name : null) },
   '/explore': { title: 'Find a circle', nav: '/explore', view: () => explore(preferences, filters) },
   '/circles': { title: 'My circles', nav: '/circles', view: myCircles },
   '/charity': { title: 'Charity', nav: '/charity', view: charity },
@@ -77,14 +98,39 @@ function renderNavigation(active) {
 
 function render({ focus = false, scroll = false } = {}) {
   if (dialog.open) dialog.close();
-  const [path, query] = (location.hash.slice(1) || '/').split('?');
-  const route = Object.hasOwn(routes, path) ? routes[path] : null;
-  currentPath = route ? path : '/';
-  currentKind = route?.kind ?? 'Standard';
-  renderNavigation(route?.nav);
-  document.title = route ? `Circl · ${route.title}` : 'Circl · Page not found';
-  main.innerHTML = route ? route.view(new URLSearchParams(query)) :
-    '<div class="panel"><h1>Page not found</h1><a class="btn secondary" href="#/">Back to overview</a></div>';
+  const requested = location.hash.slice(1) || '/';
+  const [path, query] = requested.split('?');
+  sidebar.hidden = headerTools.hidden = !activeAccount;
+  main.classList.toggle('account-layout', !activeAccount);
+  if (!activeAccount) {
+    navigation.innerHTML = '';
+    document.title = 'Circl · Account';
+    if (accountLoading || accountUnavailable) {
+      main.innerHTML = accountLoading
+        ? '<section class="panel account-panel" role="status"><h1>Checking your account…</h1></section>'
+        : '<section class="panel account-panel"><h1>Account service unavailable</h1><p>Reload this page to try again.</p></section>';
+    } else {
+      if (!isAccountPath(path) && Object.hasOwn(routes, path)) afterAccountPath = requested;
+      const entryPath = isAccountPath(path) ? path : '/account';
+      if (entryPath !== path) window.history.replaceState(null, '', '#' + entryPath);
+      main.innerHTML = accountView(entryPath);
+    }
+  } else {
+    const appPath = isAccountPath(path) ? '/' : path;
+    if (appPath !== path) window.history.replaceState(null, '', '#/');
+    const route = Object.hasOwn(routes, appPath) ? routes[appPath] : null;
+    currentPath = route ? appPath : '/';
+    currentKind = route?.kind ?? 'Standard';
+    renderNavigation(route?.nav);
+    document.querySelector('#account-name').textContent = activeAccount.name;
+    document.querySelector('#account-type').textContent = activeAccount.kind === 'person' ? 'Personal account' : 'Organization account';
+    const avatar = document.querySelector('#account-avatar');
+    avatar.textContent = activeAccount.name.split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+    avatar.setAttribute('aria-label', activeAccount.name);
+    document.title = route ? `Circl · ${route.title}` : 'Circl · Page not found';
+    main.innerHTML = route ? route.view(new URLSearchParams(query)) :
+      '<div class="panel"><h1>Page not found</h1><a class="btn secondary" href="#/">Back to overview</a></div>';
+  }
   main.classList.remove('page-enter');
   requestAnimationFrame(() => main.classList.add('page-enter'));
   if (scroll) window.scrollTo(0, 0);
@@ -127,6 +173,32 @@ function refreshResults() {
   document.querySelector('#results').innerHTML = results(preferences, filters);
 }
 
+function goTo(path) {
+  window.history.replaceState(null, '', '#' + path);
+  render({ focus: true, scroll: true });
+}
+
+function leaveAccount() {
+  if (!activeAccount) return;
+  activeAccount = null;
+  afterAccountPath = '/';
+  goTo('/account');
+}
+
+async function withAccountFeedback(button, status, task) {
+  if (button.disabled) return;
+  status.textContent = '';
+  status.hidden = false;
+  button.disabled = true;
+  try {
+    await task();
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : 'Please try again.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
 document.querySelector('.skip').addEventListener('click', (event) => {
   event.preventDefault();
   main.focus();
@@ -144,6 +216,27 @@ document.addEventListener('click', (event) => {
   }
 
   const { action, id, amount } = button.dataset;
+  if (action === 'account-fill') {
+    fillSample(button.form);
+    return;
+  }
+  if (action === 'account-resend') {
+    const email = button.form.elements.namedItem('email');
+    if (!email.reportValidity()) return;
+    const status = button.form.querySelector('[data-account-feedback]');
+    void withAccountFeedback(button, status, async () => {
+      await resendConfirmation(email.value.trim().toLowerCase());
+      status.textContent = 'Check your inbox for a new code.';
+    });
+    return;
+  }
+  if (action === 'account-sign-out') {
+    void withAccountFeedback(button, document.querySelector('#session-feedback'), async () => {
+      await signOutAccount();
+      leaveAccount();
+    });
+    return;
+  }
   if (!dialog.open) lastTrigger = button;
 
   switch (action) {
@@ -216,6 +309,22 @@ document.addEventListener('change', (event) => {
 
 document.addEventListener('submit', (event) => {
   const form = event.target;
+  if (form.id === 'account-form') {
+    event.preventDefault();
+    const button = form.querySelector('button[type="submit"]');
+    void withAccountFeedback(button, form.querySelector('[data-account-feedback]'), async () => {
+      const result = await submitAccount(form);
+      if (result.account) {
+        useAccount(result.account);
+        const destination = afterAccountPath;
+        afterAccountPath = '/';
+        goTo(destination);
+      } else {
+        goTo(result.path);
+      }
+    });
+    return;
+  }
   if (form.id === 'create-form') {
     event.preventDefault();
     lastTrigger = event.submitter;
@@ -233,4 +342,12 @@ document.addEventListener('submit', (event) => {
 });
 
 window.addEventListener('hashchange', () => render({ focus: true, scroll: true }));
-render();
+restoreAccount(leaveAccount).then(account => {
+  useAccount(account);
+}).catch(() => {
+  accountUnavailable = true;
+}).finally(() => {
+  accountLoading = false;
+  render();
+});
+if (accountLoading) render();

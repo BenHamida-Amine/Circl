@@ -17,13 +17,15 @@
       </picture>
       circl
     </a>
-    <div class="header-tools">
+    <div class="header-tools" id="header-tools" hidden>
       <span class="badge blue"><span class="desktop-only">Design preview</span><span class="mobile-only">Preview</span></span>
       <span class="desktop-only">USD</span>
-      <span class="avatar" aria-label="Maya Adams">MA</span>
+      <span class="avatar" id="account-avatar"></span>
+      <button class="btn ghost" type="button" data-action="account-sign-out">Sign out</button>
+      <span id="session-feedback" role="status" hidden></span>
     </div>
   </header>
-  <aside class="sidebar">
+  <aside class="sidebar" hidden>
     <p class="eyebrow">Your space</p>
     <nav id="navigation" aria-label="Main navigation"></nav>
     <div class="sidebar-bottom">
@@ -32,10 +34,10 @@
         <p>Everyone gets a turn.</p>
         <small>Follow your full schedule, including after payout.</small>
       </div>
-      <div class="sidebar-account">Maya Adams<br><small>Personal account</small></div>
+      <div class="sidebar-account"><span id="account-name"></span><br><small id="account-type"></small></div>
     </div>
   </aside>
-  <main id="main" tabindex="-1"></main>
+  <main id="main" class="account-layout" tabindex="-1"></main>
   <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
   <noscript><p class="panel">Enable JavaScript to explore the Circl preview.</p></noscript>
   <script type="module" src="./app.js"></script>

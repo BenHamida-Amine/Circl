@@ -8,7 +8,7 @@ const types = { html: 'text/html', css: 'text/css', js: 'text/javascript', svg: 
 const server = createServer(async (request, response) => {
   const url = new URL(request.url, 'http://localhost');
   const path = url.pathname === '/' ? '/index.html' : url.pathname;
-  if (!/^\/(?:index\.html|styles\.css|(?:app|data|views|dialogs)\.js|assets\/[a-z-]+\.svg)$/.test(path)) {
+  if (!/^\/(?:index\.html|styles\.css|(?:app|data|views|dialogs|account|account-config)\.js|assets\/[a-z-]+\.svg)$/.test(path)) {
     response.writeHead(404).end('Page not found');
     return;
   }

@@ -181,6 +181,24 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .challenge-row + .challenge-row { border-top: 1px solid var(--border); }
 .challenge-streak { color: var(--teal); text-align: right; }
 .challenge-streak strong { font-size: 22px; }
+.account-layout {
+  margin-left: 0;
+  padding: clamp(24px, 7vw, 80px) 16px;
+  justify-items: center;
+}
+.account-panel { width: min(100%, 560px); gap: 16px; }
+.account-panel form { gap: 14px; }
+.account-panel [data-account-feedback] { color: var(--amber-ink); }
+.account-panel [data-account-feedback]:empty { display: none; }
+#session-feedback {
+  position: absolute;
+  inset: 100% 12px auto auto;
+  max-width: min(320px, 90vw);
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--amber);
+  color: var(--amber-ink);
+}
 .round { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--sage); color: var(--teal); font-size: 12px; }
 .notice { border-radius: 18px; padding: 16px; }
 .labeled-check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
