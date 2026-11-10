@@ -190,6 +190,14 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .account-panel form { gap: 14px; }
 .account-panel [data-account-feedback] { color: var(--amber-ink); }
 .account-panel [data-account-feedback]:empty { display: none; }
+.advisor-content { width: 100%; max-width: 920px; margin-inline: auto; }
+.advisor-panel form { gap: 14px; }
+.advisor-choices { min-width: 0; display: grid; gap: 8px; border: 0; padding: 0; margin: 0; }
+.advisor-choice { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
+.advisor-choice:has(input:checked) { background: var(--sage); border-color: var(--teal); }
+.advisor-choice input { width: 18px; height: 18px; min-height: 0; accent-color: var(--teal); }
+.advisor-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+#advisor-feedback:empty { display: none; }
 #session-feedback {
   position: absolute;
   inset: 100% 12px auto auto;

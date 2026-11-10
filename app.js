@@ -2,6 +2,7 @@ import {
   accountView, demoAccounts, fillSample, isAccountPath, resendConfirmation, restoreAccount, signOutAccount, submitAccount,
 } from './account.js';
 import { memberships } from './data.js';
+import { advisorAnswer, advisorView, chooseAdvisorQuestion, newAdvisor } from './advisor-ui.js';
 import { dialogView } from './dialogs.js';
 import {
   agreement, challenge, charity, circleDetails, completion, createCircle, draftEstimate, explore,
@@ -47,9 +48,13 @@ let activeAccount = null;
 let accountLoading = !demoAccounts;
 let accountUnavailable = false;
 let afterAccountPath = '/';
+let advisor = newAdvisor();
+let advisorAvailability;
+let advisorLiveAvailable = false;
 
 function useAccount(account) {
   activeAccount = account;
+  advisor = newAdvisor();
   if (!account) return;
   Object.assign(preferences, { budget: 100, goal: '' });
   Object.assign(filters, { search: '', format: 'all', limit: 'budget' });
@@ -69,6 +74,9 @@ const navItems = [
 const routes = {
   '/': { title: 'Overview', nav: '/', view: () => overview(preferences.budget, activeAccount.kind === 'person' ? activeAccount.name : null) },
   '/explore': { title: 'Find a circle', nav: '/explore', view: () => explore(preferences, filters) },
+  '/advisor': { title: 'Circle advisor', nav: '/explore', view: () => advisorView(advisor, {
+    demo: demoAccounts, liveAvailable: advisorLiveAvailable,
+  }) },
   '/circles': { title: 'My circles', nav: '/circles', view: myCircles },
   '/charity': { title: 'Charity', nav: '/charity', view: charity },
   '/challenge': { title: 'Challenge', nav: '/challenge', view: challenge },
@@ -130,6 +138,7 @@ function render({ focus = false, scroll = false } = {}) {
     document.title = route ? `Circl · ${route.title}` : 'Circl · Page not found';
     main.innerHTML = route ? route.view(new URLSearchParams(query)) :
       '<div class="panel"><h1>Page not found</h1><a class="btn secondary" href="#/">Back to overview</a></div>';
+    if (appPath === '/advisor') showAdvisorAvailability();
   }
   main.classList.remove('page-enter');
   requestAnimationFrame(() => main.classList.add('page-enter'));
@@ -180,9 +189,49 @@ function goTo(path) {
 
 function leaveAccount() {
   if (!activeAccount) return;
-  activeAccount = null;
+  useAccount(null);
   afterAccountPath = '/';
   goTo('/account');
+}
+
+function showAdvisorAvailability() {
+  if (!['http:', 'https:'].includes(location.protocol)) return;
+  advisorAvailability ??= fetch('./api/advisor', { signal: AbortSignal.timeout(5000) })
+    .then(response => response.ok && response.headers.get('content-type')?.includes('application/json') ? response.json() : null)
+    .then(result => result?.enabled === true).catch(() => false);
+  void advisorAvailability.then(enabled => {
+    advisorLiveAvailable = enabled;
+    if (currentPath !== '/advisor' || !enabled) return;
+    const toggle = document.querySelector('#advisor-live-option');
+    const guided = document.querySelector('#advisor-guided-only');
+    if (toggle) toggle.hidden = false;
+    if (guided) guided.hidden = true;
+  });
+}
+
+async function advanceAdvisor(form) {
+  const session = advisor;
+  if (session.busy || !session.question) return;
+  const status = document.querySelector('#advisor-feedback');
+  let facts;
+  try {
+    facts = form ? advisorAnswer(session, form) : { ...session.facts, [session.question]: null };
+  } catch (error) {
+    status.textContent = error.message;
+    return;
+  }
+  session.busy = true;
+  if (status) status.textContent = 'Preparing the next step…';
+  for (const button of document.querySelectorAll('#advisor-form button')) button.disabled = true;
+  const result = await chooseAdvisorQuestion(facts, session.live && advisorLiveAvailable);
+  if (advisor !== session) return;
+  session.history.push({ facts: session.facts, question: session.question });
+  session.facts = facts;
+  session.question = result.question;
+  session.liveUsed ||= result.liveUsed;
+  session.error = result.unavailable ? 'Live AI is unavailable. Continuing with the guided advisor.' : '';
+  session.busy = false;
+  if (currentPath === '/advisor') render({ focus: true });
 }
 
 async function withAccountFeedback(button, status, task) {
@@ -216,6 +265,20 @@ document.addEventListener('click', (event) => {
   }
 
   const { action, id, amount } = button.dataset;
+  if (action === 'advisor-skip') {
+    void advanceAdvisor(null);
+    return;
+  }
+  if (action === 'advisor-restart' || action === 'advisor-back') {
+    if (advisor.busy) return;
+    if (action === 'advisor-restart') advisor = newAdvisor();
+    else {
+      const previous = advisor.history.pop();
+      if (previous) Object.assign(advisor, previous, { error: '' });
+    }
+    render({ focus: true });
+    return;
+  }
   if (action === 'account-fill') {
     fillSample(button.form);
     return;
@@ -268,11 +331,6 @@ document.addEventListener('click', (event) => {
       showDialog('draft-saved');
       break;
     }
-    case 'use-assistant':
-      drafts.Standard = { ...defaults.Standard };
-      lastTrigger = null;
-      render({ focus: true });
-      break;
     default:
       showDialog(action, id);
   }
@@ -301,6 +359,7 @@ document.addEventListener('input', (event) => {
 
 document.addEventListener('change', (event) => {
   const field = event.target;
+  if (field.id === 'advisor-live') advisor.live = field.checked;
   if (field.name === 'format' || field.name === 'limit') {
     filters[field.name] = field.value;
     refreshResults();
@@ -309,6 +368,11 @@ document.addEventListener('change', (event) => {
 
 document.addEventListener('submit', (event) => {
   const form = event.target;
+  if (form.id === 'advisor-form') {
+    event.preventDefault();
+    void advanceAdvisor(form);
+    return;
+  }
   if (form.id === 'account-form') {
     event.preventDefault();
     const button = form.querySelector('button[type="submit"]');

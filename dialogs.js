@@ -107,17 +107,6 @@ export function dialogView(key, options) {
           <button class="btn primary full" type="submit">Show matching circles</button>
         </form>`;
       break;
-    case 'assistant':
-      title = 'A clearer starting point.';
-      content = `${small('Sample request: “Six friends want to fund courses and tools.”')}
-        <div class="notice sage stack"><strong>Standard circle · 6 months</strong>
-          ${small('6 members × $40 each month. Each member receives $216 at their turn, with $24 held until completion.')}
-          ${small('A Special alternative uses 3 members for 9 months, with a $0-due quarter for each recipient.')}
-        </div>
-        ${small('Sample AI response. Members confirm the final amounts, schedule, and agreement.')}
-        ${action('Use Standard details', 'use-assistant', 'primary', 'full')}
-        ${link('Explore Special format', '/create/special', 'secondary', 'full')}`;
-      break;
     case 'policy':
       title = 'Late payments, exits, and recovery';
       content = `${small('Circle agreement preview')}

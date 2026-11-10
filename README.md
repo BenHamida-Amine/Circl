@@ -26,4 +26,10 @@ See Supabase’s [email templates](https://supabase.com/docs/guides/auth/auth-em
 
 Try **Review payment** from the overview, **Review commitment** from discovery, or **Create a circle** to see how the contribution and member count affect the payout. Drafts can be saved in this browser. The screens use sample data. Checkout, joining, signing and settlement are previews.
 
+## Circle advisor
+
+Open **Find a circle → Open circle advisor**. Every interview starts with the same income question, then asks only for missing details relevant to the selected goal. The report compares affordability across each paying month, net payout after the holdback, target timing, and alternatives such as a trusted-group draft, independent saving, or a one-time gift. Recommendations use sample circle data and never create a circle, join one, or move money.
+
+The private hosted preview and standalone file use the guided mode. To try live question selection locally, put an `OPENAI_API_KEY` in the ignored `.env.local` (Node.js 20.12 or newer) or in the server environment, run `npm start`, and select **Use live AI to choose follow-ups** in the advisor. The key stays on the server. The OpenAI request includes the selected answers and approximate amounts, while any goal name stays in the browser. Circl calculates all estimates in both modes.
+
 Open **Charity → Help a circle recover** to see how the seven-day exit rule, holdback distribution, recovery donations and member repayment fit together. The repayment example credits the holdback against the debt and reconciles donor support so members recover each loss once. The demo does not enforce account blocks or transfer funds.

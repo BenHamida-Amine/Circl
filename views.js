@@ -90,7 +90,7 @@ export function overview(budget, accountName = 'Maya Adams') {
     <div class="grid two">
       <div class="panel sage"><div class="row">${icon('overview-spark')}<h3>Find a circle that fits your paying months</h3></div>
         <small class="muted">Matches check all your commitments, payout dates, and $0-due months. Held money is not available to spend.</small>
-        ${link('Explore my matches', '/explore', 'ghost')}
+        ${link('Get a recommendation', '/advisor', 'ghost')}
       </div>
       <div class="panel"><h3>Fixed term. Your choice at the end.</h3>
         <small class="muted">Standard: up to 7 months. Special: 9 months. A new cycle always needs fresh consent.</small>
@@ -143,6 +143,11 @@ export function explore(preferences, filters) {
         <small class="muted">Matches check paying months, alongside your existing commitments.</small>
       </div>
       ${action('Preferences', 'preferences')}
+    </div>
+    <div class="panel sage banner">
+      <div><h2>Find a circle that fits your goal</h2>
+        <p class="muted">Answer a few questions and get a report on what fits your budget, what you could give, and how far you are from your target.</p></div>
+      ${link('Open circle advisor', '/advisor')}
     </div>
     <div class="filters">
       <label class="search-field">${icon('search-field')}<input type="search" name="search" aria-label="Search by circle name or goal" placeholder="Search by circle name or goal" value="${safe(filters.search)}"></label>
@@ -289,8 +294,8 @@ export function createCircle(kind, draft) {
         <div class="panel">
           ${icon('assistant-spark')}
           <h3>${special ? 'Budget for the months you pay.' : 'Build around a realistic budget.'}</h3>
-          <small class="muted">${special ? 'Affordability uses the full amount required in paying months.' : 'The assistant preview shows how a suggested format and schedule could work.'}</small>
-          ${special ? '' : action('Ask the circle assistant', 'assistant', 'ghost')}
+          <small class="muted">The advisor checks what fits your budget and estimates how close a circle could bring you to your goal.</small>
+          ${link('Open circle advisor', '/advisor', 'ghost')}
         </div>
       </div>
     </div>`;

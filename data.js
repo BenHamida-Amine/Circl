@@ -4,6 +4,7 @@ export const memberships = {
     turn: 'Dec 1, 2026', receiveDate: 'December 1', ends: 'Feb 28, 2027',
     period: 'Sep 2026–Feb 2027', remaining: '4 payments remain · ends Feb 28, 2027',
     due: 'Nov 1, Dec 1, Jan 1, and Feb 1',
+    remainingDueMonths: ['2026-11', '2026-12', '2027-01', '2027-02'],
     schedule: [
       ['Ana', 'Sep 1, 2026', 'Released'], ['Oak Studio · organization', 'Oct 1, 2026', 'Released'],
       ['Daniel', 'Nov 1, 2026', 'Next'], ['You · Maya', 'Dec 1, 2026', 'Your turn'],
@@ -15,6 +16,7 @@ export const memberships = {
     turn: 'Feb 28, 2027', receiveDate: 'February 28', ends: 'May 31, 2027',
     period: 'Sep 2026–May 2027', remaining: '$0 due Dec–Feb · ends May 31, 2027',
     due: 'Nov 1, Mar 1, Apr 1, and May 1',
+    remainingDueMonths: ['2026-11', '2027-03', '2027-04', '2027-05'],
     schedule: [
       ['Sep–Nov 2026', 'Oak Studio · organization', 20, 'Nov 30'],
       ['Dec 2026–Feb 2027', 'You · Maya', 0, 'Feb 28'],
@@ -24,9 +26,9 @@ export const memberships = {
 };
 
 export const discovery = {
-  neighborhood: { name: 'Neighborhood Builders', kind: 'Standard', members: 7, months: 7, contribution: 30, turn: 'May 1, 2027', goal: 'building community projects' },
-  skills: { name: 'Skills Together', kind: 'Special', members: 3, months: 9, contribution: 40, turn: 'Jul 31, 2027', goal: 'learning education', breakMonths: 'May–Jul' },
-  garden: { name: 'Community Garden', kind: 'Standard', members: 5, months: 5, contribution: 20, turn: 'Mar 1, 2027', goal: 'growing a neighborhood garden' },
+  neighborhood: { name: 'Neighborhood Builders', kind: 'Standard', members: 7, months: 7, contribution: 30, turn: 'May 1, 2027', turnMonth: '2027-05', startMonth: '2027-01', goal: 'building community projects' },
+  skills: { name: 'Skills Together', kind: 'Special', members: 3, months: 9, contribution: 40, turn: 'Jul 31, 2027', turnMonth: '2027-07', startMonth: '2027-02', breakStart: '2027-05', goal: 'learning education', breakMonths: 'May–Jul' },
+  garden: { name: 'Community Garden', kind: 'Standard', members: 5, months: 5, contribution: 20, turn: 'Mar 1, 2027', turnMonth: '2027-03', startMonth: '2027-01', goal: 'growing a neighborhood garden' },
 };
 
 export const causes = {
