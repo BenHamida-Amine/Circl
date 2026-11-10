@@ -41,7 +41,20 @@ export function dialogView(key, options) {
         ])}
         ${small(special ? `$0 due ${c.breakMonths} during your turn. Contributions continue during the other members’ turns.` : 'Continue contributing every month, including after receiving your payout.')}
         ${delayNotice}
-        ${agreementLink('Preview agreement before joining', path, 'primary', 'full')}`;
+        ${agreementLink('Preview agreement before joining', path, 'primary', 'full')}
+        ${action('Try first contribution in PayPal Sandbox', 'sandbox-checkout', 'secondary', 'full', `data-id="${id}" hidden`)}`;
+      break;
+    }
+    case 'sandbox-checkout': {
+      const c = discovery[id];
+      title = 'Try a PayPal Sandbox contribution';
+      content = `${badge('Sandbox · test funds', 'blue')}
+        ${rows([['Sample circle', c.name], ['First contribution', money(c.contribution, true)]])}
+        ${small('Use a personal PayPal Sandbox account. This test does not enroll you in a circle or move real money.')}
+        <section data-paypal-checkout class="stack">
+          <p data-paypal-status role="status" class="small muted">Preparing the Sandbox button…</p>
+          <div data-paypal-controls></div>
+        </section>`;
       break;
     }
     case 'donation': {

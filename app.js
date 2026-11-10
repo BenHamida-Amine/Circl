@@ -3,6 +3,7 @@ import {
 } from './account.js';
 import { memberships } from './data.js';
 import { advisorAnswer, advisorView, chooseAdvisorQuestion, newAdvisor } from './advisor-ui.js';
+import { mountSandboxCheckout, sandboxSettings } from './paypal-ui.js';
 import { dialogView } from './dialogs.js';
 import {
   agreement, challenge, charity, circleDetails, completion, createCircle, draftEstimate, explore,
@@ -51,10 +52,12 @@ let afterAccountPath = '/';
 let advisor = newAdvisor();
 let advisorAvailability;
 let advisorLiveAvailable = false;
+let sandboxOrders = new Map();
 
 function useAccount(account) {
   activeAccount = account;
   advisor = newAdvisor();
+  sandboxOrders = new Map();
   if (!account) return;
   Object.assign(preferences, { budget: 100, goal: '' });
   Object.assign(filters, { search: '', format: 'all', limit: 'budget' });
@@ -155,6 +158,18 @@ function showDialog(key, id) {
   if (!dialog.open) dialog.showModal();
   dialog.scrollTop = 0;
   dialog.querySelector('[data-action="close"]').focus();
+  if (key === 'membership') {
+    const checkout = dialog.querySelector('[data-action="sandbox-checkout"]');
+    void sandboxSettings().then(settings => {
+      if (!settings || !checkout.isConnected) return;
+      if (sandboxOrders.get(id)?.receipt) checkout.textContent = 'View PayPal Sandbox receipt';
+      checkout.hidden = false;
+    });
+  }
+  if (key === 'sandbox-checkout') {
+    if (!sandboxOrders.has(id)) sandboxOrders.set(id, {});
+    void mountSandboxCheckout(dialog.querySelector('[data-paypal-checkout]'), sandboxOrders.get(id), id);
+  }
 }
 
 function readForm(form) {

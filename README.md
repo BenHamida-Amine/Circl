@@ -32,4 +32,13 @@ Open **Find a circle → Open circle advisor**. Every interview starts with the 
 
 The private hosted preview and standalone file use the guided mode. To try live question selection locally, put an `OPENAI_API_KEY` in the ignored `.env.local` (Node.js 20.12 or newer) or in the server environment, run `npm start`, and select **Use live AI to choose follow-ups** in the advisor. The key stays on the server. The OpenAI request includes the selected answers and approximate amounts, while any goal name stays in the browser. Circl calculates all estimates in both modes.
 
+## PayPal and AI demo
+
+1. In the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/), select **Sandbox → Apps & Credentials**. Use a Sandbox merchant app and copy its Client ID and Secret. Add them to `.env.local` as `PAYPAL_SANDBOX_CLIENT_ID` and `PAYPAL_SANDBOX_SECRET`. Keep the Secret local. Use [Testing Tools → Sandbox Accounts](https://developer.paypal.com/sandbox-testing/accounts) for a separate personal test buyer.
+2. Configure the OpenAI key and API quota for live follow-ups, then start or restart Circl with `npm start`. Open the local preview and sign in with sample details.
+3. Open the circle advisor and enable **Use live AI to choose follow-ups**. For example, choose variable income and a purchase goal, then enter a $300 target, $50 already saved, and $100 safely available per month after non-Circl commitments. Use a target month in or after July 2027 for the seeded circles.
+4. On a matching circle, choose **Review commitment → Try first contribution in PayPal Sandbox**. Approve in the PayPal window as the personal Sandbox buyer. Circl displays the capture ID only after the server checks that PayPal completed the order for the expected amount and currency.
+
+The local server uses Sandbox exclusively and keeps demo orders and receipts in memory. The test payment does not join a real circle, change the mock ledger, move real money, or enable payouts. The hosted static preview illustrates the flow without these credentials. See the [PayPal Checkout quickstart](https://developer.paypal.com/checkout/integrate).
+
 Open **Charity → Help a circle recover** to see how the seven-day exit rule, holdback distribution, recovery donations and member repayment fit together. The repayment example credits the holdback against the debt and reconciles donor support so members recover each loss once. The demo does not enforce account blocks or transfer funds.
