@@ -11,7 +11,8 @@ try {
 }
 const port = Number(process.env.PORT || 4173);
 const types = { html: 'text/html', css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml' };
-const key = process.env.OPENAI_API_KEY?.trim();
+const configuredKey = process.env.OPENAI_API_KEY?.trim() ?? '';
+const key = /^sk-[A-Za-z0-9_-]{20,}$/.test(configuredKey) ? configuredKey : undefined;
 
 function json(response, status, data) {
   response.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
